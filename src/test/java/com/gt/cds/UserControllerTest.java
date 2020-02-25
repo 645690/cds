@@ -28,6 +28,7 @@ import java.util.Set;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,7 +40,7 @@ public class UserControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private UserSvc userSvc;
+    private UserSvc userSvcMock;
 
     /**
      * Overrides default - JsonSmartJsonProvider
@@ -83,7 +84,7 @@ public class UserControllerTest {
         userList.add(john);
         userList.add(mary);
 
-        given(userSvc.getUsersWithinSalaryRange(0L, 4000L)).willReturn(userList);
+        given(userSvcMock.getUsersWithinSalaryRange(0L, 4000L)).willReturn(userList);
 
         mvc.perform(get("/users")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -91,5 +92,8 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.result", hasSize(2)))
                 .andExpect(jsonPath("$.result[0].name", is(john.getName())))
                 .andExpect(jsonPath("$.result[0].salary", is(john.getSalary())));
+
+        verify(userSvcMock, times(1)).getUsersWithinSalaryRange(0L, 4000L);
+        verifyNoMoreInteractions(userSvcMock);
     }
 }
